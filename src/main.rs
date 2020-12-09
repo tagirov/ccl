@@ -19,5 +19,5 @@ fn main() {
         "%" => left % right,
          _  => panic!(print_ops)
     };
-    println!("{}", result);
+    println!("= {}", result);
 }
