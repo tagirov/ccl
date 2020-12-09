@@ -19,7 +19,7 @@ fn main() {
         .unwrap_or_else(|| {
             eprintln!("{}", &print_ops);
             exit(1);
-    });
+        });
     let b = args.next()
         .unwrap_or_else(|| {
             eprintln!("Not enough arguments");
@@ -36,7 +36,7 @@ fn main() {
         "/" => a / b,
         "x" => a * b,
         "%" => a % b,
-        _ => { eprintln!("{}", print_ops); exit(1); }
+         _  => { eprintln!("{}", print_ops); exit(1); }
     };
     println!("= {}", result);
 }
