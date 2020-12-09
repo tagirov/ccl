@@ -1,23 +1,42 @@
+use std::process::exit;
+
 fn main() {
     let mut args = std::env::args().skip(1);
 
     let print_ops = "Expected operator: [ + ][ - ][ / ][ x ][ % ]";
-    
-    let left = args.next().expect("Not enough arguments")
-        .parse::<f64>().expect("The first argument is not a number");
 
-    let op = args.next().expect(&print_ops);
-
-    let right = args.next().expect("Not enough arguments")
-        .parse::<f64>().expect("The third argument is not a number");
-
+    let a = args.next()
+        .unwrap_or_else(|| {
+            eprintln!("Not enough arguments");
+            exit(1);
+        })
+        .parse::<f64>()
+        .unwrap_or_else(|_| {
+            eprintln!("The first argument is not a number");
+            exit(1);
+        });
+    let op = args.next()
+        .unwrap_or_else(|| {
+            eprintln!("{}", &print_ops);
+            exit(1);
+    });
+    let b = args.next()
+        .unwrap_or_else(|| {
+            eprintln!("Not enough arguments");
+            exit(1);
+        })
+        .parse::<f64>()
+        .unwrap_or_else(|_| {
+            eprintln!("The third argument is not a number");
+            exit(1);
+        });
     let result = match op.as_str() {
-        "+" => left + right,
-        "-" => left - right,
-        "/" => left / right,
-        "x" => left * right,
-        "%" => left % right,
-         _  => panic!(print_ops)
+        "+" => a + b,
+        "-" => a - b,
+        "/" => a / b,
+        "x" => a * b,
+        "%" => a % b,
+        _ => { eprintln!("{}", print_ops); exit(1); }
     };
     println!("= {}", result);
 }
