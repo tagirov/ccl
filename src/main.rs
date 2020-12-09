@@ -1,28 +1,23 @@
 fn main() {
-    let args = std::env::args;
+    let mut args = std::env::args().skip(1);
 
-    let first = args()
-        .nth(1)
-        .expect("Not enough arguments")
-        .parse::<f64>()
-        .expect("The first argument must be a number");
+    let print_ops = "Expected operator: [ + ][ - ][ / ][ x ][ % ]";
+    
+    let left = args.next().expect("Not enough arguments")
+        .parse::<f64>().expect("The first argument is not a number");
 
-    let op = args()
-        .nth(2)
-        .expect("The second argument must be an operator:  [+] [-] [/] [x] [%]");
+    let op = args.next().expect(&print_ops);
 
-    let second = args()
-        .nth(3)
-        .expect("Not enough arguments")
-        .parse::<f64>()
-        .expect("The third argument must be a number");
+    let right = args.next().expect("Not enough arguments")
+        .parse::<f64>().expect("The third argument is not a number");
 
-    match op.as_str() {
-        "+" => println!("{}", first + second),
-        "-" => println!("{}", first - second),
-        "/" => println!("{}", first / second),
-        "x" => println!("{}", first * second),
-        "%" => println!("{}", first % second),
-        _ => println!("Wrong operator. Available: [+] [-] [/] [x] [%]"),
-    }
+    let result = match op.as_str() {
+        "+" => left + right,
+        "-" => left - right,
+        "/" => left / right,
+        "x" => left * right,
+        "%" => left % right,
+         _  => panic!(print_ops)
+    };
+    println!("{}", result);
 }
