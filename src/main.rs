@@ -30,13 +30,20 @@ fn main() {
             eprintln!("The third argument is not a number");
             exit(1);
         });
+    if (a == 0.0 || b == 0.0) && (op == "/" || op == "%") {
+            eprintln!("Forbidden: division by zero");
+            exit(1);
+    }
     let result = match op.as_str() {
         "+" => a + b,
         "-" => a - b,
         "/" => a / b,
         "x" => a * b,
         "%" => a % b,
-         _  => { eprintln!("{}", print_ops); exit(1); }
+        _ => {
+            eprintln!("{}", print_ops);
+            exit(1);
+        }
     };
     println!("= {}", result);
 }
