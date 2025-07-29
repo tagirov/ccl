@@ -1,0 +1,9 @@
+[package]
+name = "ccl"
+version = "0.1.0"
+authors = ["github.com/tagirov"]
+edition = "2024"
+description = "A minimal calculator"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
