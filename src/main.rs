@@ -154,3 +154,99 @@ fn main() {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn calc(input: &str) -> Result<f64, String> {
+        tokenize(input).and_then(eval)
+    }
+
+    #[test]
+    fn basic_operations() {
+        assert_eq!(calc("2 + 3"), Ok(5.0));
+        assert_eq!(calc("7 - 10"), Ok(-3.0));
+        assert_eq!(calc("6 * 7"), Ok(42.0));
+        assert_eq!(calc("15 / 4"), Ok(3.75));
+        assert_eq!(calc("10 % 3"), Ok(1.0));
+    }
+
+    #[test]
+    fn operator_precedence() {
+        assert_eq!(calc("2 + 2 * 2"), Ok(6.0));
+        assert_eq!(calc("10 - 4 / 2"), Ok(8.0));
+        assert_eq!(calc("2 * 3 + 4 * 5"), Ok(26.0));
+        assert_eq!(calc("1 + 10 % 3 - 2"), Ok(0.0));
+    }
+
+    #[test]
+    fn left_associativity() {
+        assert_eq!(calc("10 - 3 - 2"), Ok(5.0));
+        assert_eq!(calc("100 / 10 / 2"), Ok(5.0));
+        assert_eq!(calc("100 % 30 % 7"), Ok(3.0));
+    }
+
+    #[test]
+    fn no_spaces() {
+        assert_eq!(calc("2+2*2"), Ok(6.0));
+        assert_eq!(calc("1-2/4"), Ok(0.5));
+    }
+
+    #[test]
+    fn word_operators() {
+        assert_eq!(calc("2 add 3"), Ok(5.0));
+        assert_eq!(calc("7 sub 2"), Ok(5.0));
+        assert_eq!(calc("3 x 4"), Ok(12.0));
+        assert_eq!(calc("3 mul 4"), Ok(12.0));
+        assert_eq!(calc("8 div 2"), Ok(4.0));
+        assert_eq!(calc("9 rem 4"), Ok(1.0));
+    }
+
+    #[test]
+    fn floats() {
+        assert_eq!(calc("1.5 + 2.25"), Ok(3.75));
+        assert_eq!(calc(".5 * 4"), Ok(2.0));
+        assert_eq!(calc("0.1 * 10"), Ok(0.1f64 * 10.0));
+    }
+
+    #[test]
+    fn unary_minus() {
+        assert_eq!(calc("-5"), Ok(-5.0));
+        assert_eq!(calc("-2 + 3"), Ok(1.0));
+        assert_eq!(calc("2 * -3"), Ok(-6.0));
+        assert_eq!(calc("2--3"), Ok(5.0));
+        assert_eq!(calc("-2*-2"), Ok(4.0));
+    }
+
+    #[test]
+    fn single_number() {
+        assert_eq!(calc("42"), Ok(42.0));
+        assert_eq!(calc("-0.5"), Ok(-0.5));
+    }
+
+    #[test]
+    fn division_by_zero() {
+        assert_eq!(calc("1 / 0"), Err("Forbidden: division by zero".into()));
+        assert_eq!(calc("1 % 0"), Err("Forbidden: division by zero".into()));
+        // zero as dividend is fine
+        assert_eq!(calc("0 / 5"), Ok(0.0));
+    }
+
+    #[test]
+    fn malformed_expressions() {
+        assert_eq!(calc(""), Err("malformed expression".into()));
+        assert_eq!(calc("2 +"), Err("malformed expression".into()));
+        assert_eq!(calc("+ 2"), Err("malformed expression".into()));
+        assert_eq!(calc("2 3"), Err("malformed expression".into()));
+        assert_eq!(calc("2 + * 3"), Err("malformed expression".into()));
+    }
+
+    #[test]
+    fn invalid_input() {
+        assert_eq!(calc("2 & 3"), Err("unexpected character: &".into()));
+        assert_eq!(calc("2 foo 3"), Err("unknown operator: foo".into()));
+        assert_eq!(calc("1.2.3 + 1"), Err("invalid number: 1.2.3".into()));
+        assert_eq!(calc("2 + ."), Err("invalid number: .".into()));
+    }
+}
