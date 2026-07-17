@@ -1,6 +1,6 @@
 [package]
 name = "ccl"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["github.com/tagirov/ccl/graphs/contributors"]
 edition = "2024"
 description = "A minimal calculator"
