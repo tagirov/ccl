@@ -9,6 +9,9 @@ ccl 2 / 2
 ccl 2 x 2 (2 \* 2)
 ccl 2 % 2
 
+ccl 2 + 2 x 2   # operator precedence: 6
+ccl "2+2*2"
+
 ccl --help
 ```
 

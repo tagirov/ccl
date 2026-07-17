@@ -1,48 +1,156 @@
-use clap::{Parser, ValueEnum};
+use clap::Parser;
 
 #[derive(Parser)]
-#[command(version, about)] 
+#[command(version, about, allow_negative_numbers = true)]
 struct Cli {
-    a: f64,
-    #[arg(value_enum)]
-    op: Op,
-    b: f64,
+    /// Expression, e.g.: 2 + 2 x 2 or "2+2*2"
+    #[arg(required = true, num_args = 1..)]
+    expr: Vec<String>,
 }
 
-#[derive(Copy, Clone, ValueEnum)]
+#[derive(Copy, Clone)]
 enum Op {
-    #[clap(alias = "+")]
     Add,
-    #[clap(alias = "-")]
     Sub,
-    #[clap(alias = "/")]
-    Div,
-    #[clap(alias = "x", alias = "*")]
     Mul,
-    #[clap(alias = "%")]
+    Div,
     Rem,
+}
+
+enum Token {
+    Num(f64),
+    Op(Op),
+}
+
+fn read_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> Result<f64, String> {
+    let mut s = String::new();
+    while let Some(&c) = chars.peek() {
+        if c.is_ascii_digit() || c == '.' {
+            s.push(c);
+            chars.next();
+        } else {
+            break;
+        }
+    }
+    s.parse().map_err(|_| format!("invalid number: {}", s))
+}
+
+fn tokenize(input: &str) -> Result<Vec<Token>, String> {
+    let mut tokens = Vec::new();
+    let mut chars = input.chars().peekable();
+    while let Some(&c) = chars.peek() {
+        match c {
+            ' ' => {
+                chars.next();
+            }
+            '+' | '*' | '/' | '%' => {
+                chars.next();
+                tokens.push(Token::Op(match c {
+                    '+' => Op::Add,
+                    '*' => Op::Mul,
+                    '/' => Op::Div,
+                    _ => Op::Rem,
+                }));
+            }
+            '-' => {
+                chars.next();
+                // unary minus at expression start or right after an operator
+                if matches!(tokens.last(), None | Some(Token::Op(_))) {
+                    tokens.push(Token::Num(-read_number(&mut chars)?));
+                } else {
+                    tokens.push(Token::Op(Op::Sub));
+                }
+            }
+            c if c.is_ascii_digit() || c == '.' => {
+                tokens.push(Token::Num(read_number(&mut chars)?));
+            }
+            c if c.is_ascii_alphabetic() => {
+                let mut word = String::new();
+                while let Some(&c) = chars.peek() {
+                    if c.is_ascii_alphabetic() {
+                        word.push(c);
+                        chars.next();
+                    } else {
+                        break;
+                    }
+                }
+                tokens.push(Token::Op(match word.as_str() {
+                    "add" => Op::Add,
+                    "sub" => Op::Sub,
+                    "x" | "mul" => Op::Mul,
+                    "div" => Op::Div,
+                    "rem" => Op::Rem,
+                    _ => return Err(format!("unknown operator: {}", word)),
+                }));
+            }
+            _ => return Err(format!("unexpected character: {}", c)),
+        }
+    }
+    Ok(tokens)
+}
+
+fn eval(tokens: Vec<Token>) -> Result<f64, String> {
+    let mut nums = Vec::new();
+    let mut ops = Vec::new();
+    let mut expect_num = true;
+    for token in tokens {
+        match (token, expect_num) {
+            (Token::Num(n), true) => {
+                nums.push(n);
+                expect_num = false;
+            }
+            (Token::Op(op), false) => {
+                ops.push(op);
+                expect_num = true;
+            }
+            _ => return Err("malformed expression".into()),
+        }
+    }
+    if expect_num {
+        return Err("malformed expression".into());
+    }
+
+    // first pass: * / % (higher precedence)
+    let mut sum_nums = vec![nums[0]];
+    let mut sum_ops = Vec::new();
+    for (op, n) in ops.into_iter().zip(nums.into_iter().skip(1)) {
+        match op {
+            Op::Mul | Op::Div | Op::Rem => {
+                if matches!(op, Op::Div | Op::Rem) && n == 0.0 {
+                    return Err("Forbidden: division by zero".into());
+                }
+                let a = sum_nums.pop().unwrap();
+                sum_nums.push(match op {
+                    Op::Mul => a * n,
+                    Op::Div => a / n,
+                    _ => a % n,
+                });
+            }
+            Op::Add | Op::Sub => {
+                sum_ops.push(op);
+                sum_nums.push(n);
+            }
+        }
+    }
+
+    // second pass: + -
+    let mut result = sum_nums[0];
+    for (op, n) in sum_ops.into_iter().zip(sum_nums.into_iter().skip(1)) {
+        result = match op {
+            Op::Add => result + n,
+            _ => result - n,
+        };
+    }
+    Ok(result)
 }
 
 fn main() {
     let cli = Cli::parse();
-    let result = match cli.op {
-        Op::Add => cli.a + cli.b,
-        Op::Sub => cli.a - cli.b,
-        Op::Mul => cli.a * cli.b,
-        Op::Div => {
-            if cli.b == 0.0 {
-                eprintln!("Forbidden: division by zero");
-                std::process::exit(1);
-            }
-            cli.a / cli.b
+    match tokenize(&cli.expr.join(" ")).and_then(eval) {
+        Ok(v) => println!("{}", v),
+        Err(e) => {
+            eprintln!("{}", e);
+            std::process::exit(1);
         }
-        Op::Rem => {
-            if cli.b == 0.0 {
-                eprintln!("Forbidden: division by zero");
-                std::process::exit(1);
-            }
-            cli.a % cli.b
-        }
-    };
-    println!("{}", result);
+    }
 }
