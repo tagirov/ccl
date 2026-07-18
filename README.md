@@ -33,6 +33,26 @@ The binary will be installed to:
 
 Make sure that these paths are added to your $PATH environment variable to use `ccl` command globally.
 
+#### Nix
+
+Run without installing:
+
+```bash
+nix run github:tagirov/ccl -- 2 + 2 x 2
+```
+
+Or add to your NixOS/Home Manager configuration as a flake input:
+
+```nix
+{
+  inputs.ccl.url = "github:tagirov/ccl";
+}
+```
+
+```nix
+environment.systemPackages = [ inputs.ccl.packages.${pkgs.system}.default ];
+```
+
 #### Manually
 
 ```bash
