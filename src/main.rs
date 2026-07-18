@@ -43,11 +43,11 @@ fn tokenize(input: &str) -> Result<Vec<Token>, String> {
             ' ' => {
                 chars.next();
             }
-            '+' | '*' | '/' | '%' => {
+            '+' | '*' | 'x' | '/' | '%' => {
                 chars.next();
                 tokens.push(Token::Op(match c {
                     '+' => Op::Add,
-                    '*' => Op::Mul,
+                    '*' | 'x' => Op::Mul,
                     '/' => Op::Div,
                     _ => Op::Rem,
                 }));
@@ -63,25 +63,6 @@ fn tokenize(input: &str) -> Result<Vec<Token>, String> {
             }
             c if c.is_ascii_digit() || c == '.' => {
                 tokens.push(Token::Num(read_number(&mut chars)?));
-            }
-            c if c.is_ascii_alphabetic() => {
-                let mut word = String::new();
-                while let Some(&c) = chars.peek() {
-                    if c.is_ascii_alphabetic() {
-                        word.push(c);
-                        chars.next();
-                    } else {
-                        break;
-                    }
-                }
-                tokens.push(Token::Op(match word.as_str() {
-                    "add" => Op::Add,
-                    "sub" => Op::Sub,
-                    "x" | "mul" => Op::Mul,
-                    "div" => Op::Div,
-                    "rem" => Op::Rem,
-                    _ => return Err(format!("unknown operator: {}", word)),
-                }));
             }
             _ => return Err(format!("unexpected character: {}", c)),
         }
@@ -194,13 +175,9 @@ mod tests {
     }
 
     #[test]
-    fn word_operators() {
-        assert_eq!(calc("2 add 3"), Ok(5.0));
-        assert_eq!(calc("7 sub 2"), Ok(5.0));
+    fn x_operator() {
         assert_eq!(calc("3 x 4"), Ok(12.0));
-        assert_eq!(calc("3 mul 4"), Ok(12.0));
-        assert_eq!(calc("8 div 2"), Ok(4.0));
-        assert_eq!(calc("9 rem 4"), Ok(1.0));
+        assert_eq!(calc("5x5+5"), Ok(30.0));
     }
 
     #[test]
@@ -245,7 +222,7 @@ mod tests {
     #[test]
     fn invalid_input() {
         assert_eq!(calc("2 & 3"), Err("unexpected character: &".into()));
-        assert_eq!(calc("2 foo 3"), Err("unknown operator: foo".into()));
+        assert_eq!(calc("2 foo 3"), Err("unexpected character: f".into()));
         assert_eq!(calc("1.2.3 + 1"), Err("invalid number: 1.2.3".into()));
         assert_eq!(calc("2 + ."), Err("invalid number: .".into()));
     }
