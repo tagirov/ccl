@@ -1,6 +1,6 @@
 <h1 align="center">ccl</h1>
 
-<p align="center">A minimal terminal calculator</p>
+<p align="center">A minimalistic terminal calculator</p>
 
 ```bash
 $ ccl 2 + 2 x 2
