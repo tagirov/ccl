@@ -35,6 +35,12 @@ Make sure that these paths are added to your $PATH environment variable to use `
 
 #### Nix
 
+Install with a single command (any system with Nix, flakes enabled):
+
+```bash
+nix profile install github:tagirov/ccl
+```
+
 Run without installing:
 
 ```bash
