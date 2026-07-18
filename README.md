@@ -1,6 +1,6 @@
 <h1 align="center">ccl</h1>
 
-<p align="center">A minimalistic terminal calculator</p>
+<p align="center">A minimalistic cross-platform terminal calculator</p>
 
 ```bash
 $ ccl 2 + 2 x 2
@@ -16,8 +16,42 @@ $ ccl 2 + 2 x 2
 
 ## Install
 
+#### Prebuilt binaries
+
+Grab the latest binary for Linux, MacOS (Intel / Apple Silicon) or Windows
+from [Releases](https://github.com/tagirov/ccl/releases).
+
+#### Linux/MacOS/Windows
+
 ```bash
-cargo install --path .
+cargo install --git https://github.com/tagirov/ccl
+```
+
+The binary will be installed to:
+- Linux/MacOS: `$HOME/.cargo/bin/ccl`
+- Windows: `%USERPROFILE%\.cargo\bin\ccl.exe`
+
+Make sure that these paths are added to your $PATH environment variable to use `ccl` command globally.
+
+#### Manually
+
+```bash
+git clone https://github.com/tagirov/ccl && cd ccl
+```
+```bash
+cargo build --release
+```
+
+Linux/MacOS
+
+```bash
+sudo install -m 755 ./target/release/ccl /usr/local/bin
+```
+
+Windows
+
+```bash
+copy .\target\release\ccl.exe "%USERPROFILE%\AppData\Local\Microsoft\WindowsApps\"
 ```
 
 ## Usage

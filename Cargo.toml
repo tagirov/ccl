@@ -3,7 +3,7 @@ name = "ccl"
 version = "0.3.0"
 authors = ["github.com/tagirov/ccl/graphs/contributors"]
 edition = "2024"
-description = "A minimalistic terminal calculator"
+description = "A minimalistic cross-platform terminal calculator"
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
